@@ -97,6 +97,7 @@ impl ConnectionActor {
                 reason: Some(reason),
             }),
             ConnectionCommand::Ping => Some(Message::Ping),
+            ConnectionCommand::Init(payload) => Some(Message::init(Some(payload))),
         }
     }
 
@@ -150,7 +151,7 @@ impl ConnectionActor {
                 self.operations.remove(&id);
                 None
             }
-            Event::ConnectionAck { .. } => Some(Message::close(Reason::UnexpectedAck)),
+            Event::ConnectionAck { .. } => None,
             Event::Ping { .. } => Some(Message::Pong),
             Event::Pong { .. } => None,
         }

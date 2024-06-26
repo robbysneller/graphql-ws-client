@@ -7,6 +7,7 @@ use std::{
 };
 
 use futures_lite::StreamExt;
+use serde::Serialize;
 use serde_json::Value;
 
 use crate::{
@@ -123,6 +124,23 @@ impl Client {
             .await
             .ok();
     }
+
+    /// Send an arbitrary ConnectionInit message to the server.
+    ///
+    /// This is outside of the general GraphQL WS protocol.  However, this allows us to update
+    /// our client authentication token on the websocket connection and is expected by our
+    /// custom Graphql Websocket on the server
+    pub async fn connection_init<NewPayload>(&self, payload: NewPayload) -> Result<(), Error>
+    where
+        NewPayload: Serialize,
+    {
+        let payload =
+            serde_json::to_value(payload).map_err(|error| Error::Serializing(error.to_string()))?;
+        self.actor
+            .send(ConnectionCommand::Init(payload))
+            .await
+            .map_err(|_| Error::Send("Error sending connect_init".to_string()))
+    }
 }
 
 pub(super) enum ConnectionCommand {
@@ -135,6 +153,7 @@ pub(super) enum ConnectionCommand {
     Ping,
     Cancel(usize),
     Close(u16, String),
+    Init(Value),
 }
 
 impl fmt::Debug for Client {
