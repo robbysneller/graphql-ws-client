@@ -118,7 +118,7 @@ impl Client {
     ///
     /// This will stop all running subscriptions and shut down the ConnectionActor wherever
     /// it is running.
-    pub async fn close(self, code: u16, description: impl Into<String>) {
+    pub async fn close(&self, code: u16, description: impl Into<String>) {
         self.actor
             .send(ConnectionCommand::Close(code, description.into()))
             .await
