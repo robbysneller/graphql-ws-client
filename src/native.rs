@@ -43,7 +43,9 @@ where
         <Self as SinkExt<tungstenite::Message>>::send(
             self,
             match message {
-                crate::next::Message::Text(text) => tungstenite::Message::Text(text.to_string()),
+                crate::next::Message::Text(text) => {
+                    tungstenite::Message::Text(text.to_string().into())
+                }
                 crate::next::Message::Close { code, reason } => {
                     tungstenite::Message::Close(code.zip(reason).map(|(code, reason)| CloseFrame {
                         code: code.into(),
