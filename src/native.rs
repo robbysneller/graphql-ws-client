@@ -18,7 +18,7 @@ where
         loop {
             match self.next().await? {
                 Ok(tungstenite::Message::Text(text)) => {
-                    return Some(crate::next::Message::Text(text))
+                    return Some(crate::next::Message::Text(text.to_string()))
                 }
                 Ok(tungstenite::Message::Ping(_)) => return Some(crate::next::Message::Ping),
                 Ok(tungstenite::Message::Pong(_)) => return Some(crate::next::Message::Pong),
@@ -43,15 +43,15 @@ where
         <Self as SinkExt<tungstenite::Message>>::send(
             self,
             match message {
-                crate::next::Message::Text(text) => tungstenite::Message::Text(text),
+                crate::next::Message::Text(text) => tungstenite::Message::Text(text.to_string()),
                 crate::next::Message::Close { code, reason } => {
                     tungstenite::Message::Close(code.zip(reason).map(|(code, reason)| CloseFrame {
                         code: code.into(),
                         reason: reason.into(),
                     }))
                 }
-                crate::next::Message::Ping => tungstenite::Message::Ping(vec![]),
-                crate::next::Message::Pong => tungstenite::Message::Pong(vec![]),
+                crate::next::Message::Ping => tungstenite::Message::Ping(vec![].into()),
+                crate::next::Message::Pong => tungstenite::Message::Pong(vec![].into()),
             },
         )
         .await
